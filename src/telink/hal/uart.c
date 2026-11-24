@@ -144,7 +144,28 @@ void hal_uart_deinit(void) {
     g_uart_rx_tail = 0;
 }
 
+/* A malformed byte (framing or parity) latches the 8258's RX error flag, and
+ * in DMA mode nothing more is received until software clears it. The SDK
+ * clears it for B91/B92 inside the RX interrupt; on the 8258 only
+ * drv_uart_exceptionProcess() does, which the SDK's own HCI and bootloader
+ * loops call on every pass and this firmware never did.
+ *
+ * The bad byte comes from mains returning: the MCU powers up alongside the
+ * module and its TX line glitches while it boots. One glitch is enough to
+ * deafen the link for good. TX is unaffected, so commands still reach the
+ * relays, but no key press or report reaches the coordinator again. A
+ * reboot of the module alone (OTA, config write) never shows it, because the
+ * MCU keeps running and the line stays quiet.
+ *
+ * Checked here because every reader polls this first, from the main loop. */
+static void uart_rx_clear_error(void) {
+    if (uart_is_parity_error()) {
+        uart_clear_parity_error();
+    }
+}
+
 uint16_t hal_uart_rx_available(void) {
+    uart_rx_clear_error();
     return uart_ring_used();
 }
 

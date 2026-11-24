@@ -4,12 +4,13 @@
 #include "base_components/network_indicator.h"
 #include "base_components/battery.h"
 #include "hal/zigbee.h"
+#include "zigbee/cluster_common.h"
 
 #include "config_nv.h"
 
 extern network_indicator_t network_indicator;
 
-extern hal_zigbee_endpoint endpoints[10];
+extern hal_zigbee_endpoint endpoints[ZIGBEE_MAX_ENDPOINTS];
 
 extern uint8_t allow_simultaneous_latching_pulses;
 

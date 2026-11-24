@@ -32,7 +32,7 @@ void switch_cluster_on_button_long_press(zigbee_switch_cluster *cluster);
 static bool switch_cluster_has_valid_relay(
     const zigbee_switch_cluster *cluster);
 
-zigbee_switch_cluster *switch_cluster_by_endpoint[10];
+zigbee_switch_cluster *switch_cluster_by_endpoint[ENDPOINT_TABLE_SIZE];
 
 static void sync_switch_indicator_led(zigbee_switch_cluster *cluster) {
     if (cluster->indicator_led == NULL) {
@@ -84,17 +84,17 @@ void switch_cluster_callback_attr_write_trampoline(uint8_t endpoint,
                                                    uint16_t attribute_id) {
     // genOnOffSwitchCfg also lives on dimmer endpoints, which have no switch
     // cluster: no-op there instead of writing through a NULL cluster.
-    if (endpoint >= sizeof(switch_cluster_by_endpoint) / sizeof(switch_cluster_by_endpoint[0]) ||
-        switch_cluster_by_endpoint[endpoint] == NULL) {
+    zigbee_switch_cluster *cluster = ENDPOINT_LOOKUP(switch_cluster_by_endpoint, endpoint);
+
+    if (cluster == NULL) {
         return;
     }
-    switch_cluster_on_write_attr(switch_cluster_by_endpoint[endpoint],
-                                 attribute_id);
+    switch_cluster_on_write_attr(cluster, attribute_id);
 }
 
 void switch_cluster_add_to_endpoint(zigbee_switch_cluster *cluster,
                                     hal_zigbee_endpoint *endpoint) {
-    switch_cluster_by_endpoint[endpoint->endpoint] = cluster;
+    ENDPOINT_REGISTER(switch_cluster_by_endpoint, endpoint->endpoint, cluster);
     cluster->endpoint = endpoint->endpoint;
     switch_cluster_load_attrs_from_nv(cluster);
 

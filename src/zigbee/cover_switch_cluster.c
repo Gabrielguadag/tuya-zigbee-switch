@@ -25,7 +25,7 @@
 extern zigbee_cover_cluster cover_clusters[];
 extern uint8_t cover_clusters_cnt;
 
-static zigbee_cover_switch_cluster *      cover_switch_cluster_by_endpoint[10];
+static zigbee_cover_switch_cluster *      cover_switch_cluster_by_endpoint[ENDPOINT_TABLE_SIZE];
 static zigbee_cover_switch_cluster_config nv_config_buffer;
 
 static const uint8_t  multistate_out_of_service = 0;
@@ -324,7 +324,13 @@ void cover_switch_cluster_on_write_attr(zigbee_cover_switch_cluster *cluster,
 
 void cover_switch_cluster_callback_attr_write_trampoline(uint8_t endpoint,
                                                          uint16_t attribute_id) {
-    cover_switch_cluster_on_write_attr(cover_switch_cluster_by_endpoint[endpoint],
+    zigbee_cover_switch_cluster *cluster = ENDPOINT_LOOKUP(cover_switch_cluster_by_endpoint,
+                                                           endpoint);
+
+    if (cluster == NULL) {
+        return;
+    }
+    cover_switch_cluster_on_write_attr(cluster,
                                        attribute_id);
 }
 
@@ -347,7 +353,7 @@ void cover_switch_cluster_init(zigbee_cover_switch_cluster *cluster) {
 
 void cover_switch_cluster_add_to_endpoint(zigbee_cover_switch_cluster *cluster,
                                           hal_zigbee_endpoint *endpoint) {
-    cover_switch_cluster_by_endpoint[endpoint->endpoint] = cluster;
+    ENDPOINT_REGISTER(cover_switch_cluster_by_endpoint, endpoint->endpoint, cluster);
     cluster->endpoint = endpoint->endpoint;
     cover_switch_cluster_init(cluster);
     cover_switch_cluster_load_attrs_from_nv(cluster);

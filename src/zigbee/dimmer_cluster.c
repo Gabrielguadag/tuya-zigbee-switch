@@ -4,7 +4,7 @@
 #include "zigbee/tuya_mcu_app.h"
 #include "zigbee/tuya_secondary_mcu.h"
 
-#define DIMMER_MAX_ENDPOINTS    10
+#define DIMMER_MAX_ENDPOINTS    ENDPOINT_TABLE_SIZE
 static zigbee_dimmer_cluster *dimmer_cluster_by_endpoint[DIMMER_MAX_ENDPOINTS];
 
 static zigbee_dimmer_cluster *dimmer_by_endpoint(uint8_t endpoint) {

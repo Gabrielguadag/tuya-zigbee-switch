@@ -4,6 +4,7 @@
 #include "hal/zigbee.h"
 #include "zigbee/basic_cluster.h"
 #include "zigbee/battery_cluster.h"
+#include "zigbee/cluster_common.h"
 #include "zigbee/consts.h"
 #include "zigbee/cover_cluster.h"
 #include "zigbee/cover_switch_cluster.h"
@@ -83,7 +84,7 @@ zigbee_cover_cluster cover_clusters[3];
 uint8_t cover_clusters_cnt = 0;
 
 hal_zigbee_cluster  clusters[64];
-hal_zigbee_endpoint endpoints[10];
+hal_zigbee_endpoint endpoints[ZIGBEE_MAX_ENDPOINTS];
 
 uint8_t allow_simultaneous_latching_pulses = 0;
 uint8_t relay_pulse_ms = 100;

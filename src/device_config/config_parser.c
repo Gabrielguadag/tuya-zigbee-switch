@@ -269,6 +269,13 @@ void parse_config() {
             // all work exactly as they do for a GPIO button.
             uint8_t dpid = 0;
             if (parse_hex_byte(entry + 2, &dpid) && dpid != 0) {
+                // Same tables as a GPIO switch; nothing else stops a long
+                // config string from writing past them.
+                if (buttons_cnt >= sizeof(buttons) / sizeof(buttons[0]) ||
+                    switch_clusters_cnt >= sizeof(switch_clusters) / sizeof(switch_clusters[0])) {
+                    printf("Too many switches, ignoring %s\r\n", entry);
+                    continue;
+                }
                 buttons[buttons_cnt].pin   = HAL_INVALID_PIN;
                 buttons[buttons_cnt].dp_id = dpid;
                 buttons[buttons_cnt].long_press_duration_ms  = 800;
